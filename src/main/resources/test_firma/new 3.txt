@@ -1,0 +1,107 @@
+Salve ho ancora delle domande lasciate in sospeso in relazione al servizio DAX, perchè rimaste senza risposta o che richiedono approfondimenti, prego di ripondere almeno alle domande 15 e 16 che sono quelle per il momento più importanti:
+
+DOMANDA 1: Secondo la documentazione è possibile inviare con un sip manifest uno più documenti con i loro uno più aggregati/allegati, è quindi possibile inviare per esempio una "fattura" con relativi allegati insieme a una "delibera" con relativi aggregati/allegati? Se si potete inviarmi un'esempio del SIPManifest.xml vorrei avere conferma che il codice del tipo dei DigDocs relativo alla delibera e alla fattura sono entrambi "P"
+
+RISPOSTA 1: Il codice a cui fa riferimento immagino sia P (file principale) e ALL (allegato) che rappresentano appunto il file principale della SD a cui possono essere associati uno o più allegati, questo indipendentemente dalla tipologia documentale a cui si fa riferimento. In merito alla possibilità di poter accorpare più tipologie documentali nello stesso SIPManifest è consentita con il vincolo che schede documento e unità archivistiche siano omogenee tra loro. Purtroppo non ho esempi in merito da poterle inoltrare.
+
+DOMANDA 2: In relazione alla domanda 1: cosa intendete con "schede documento e unità archivistiche siano omogenee tra loro" nel senso che la SD (che è costituito da uno o più documenti digitali e/o analogici) deve essere composto da documenti di sole Delibere se l'UA relativa (aggregato logico di schede documento collegate tra loro) a delle SD costituite da sole Delibere ? In quel caso viene meno la possibilità di integrare in uno stesso SIPManifets.xml con diverse tipologie di SD e.g. delibere, contratti, determine a meno di specificare le diverse UA per tipologia delle SD?
+
+RISPOSTA 2: Le UA devono contenere schede documentali omogenee. La disomogeneità di classi documentali nello stesso pacchetto di versamento è opinabile sia come scelta funzionale che architetturale.
+
+DOMANDA 3: Quando si invia in conservazione il pacchetto SIP viene generato un idSip dal DAX che ci permette di fare interrogazioni sull'esito della richiesta di conservazione, in relazione all'esempio precedente quando invoco il "Rapporto di versamento" RDV o come lo chiamate voi "SipResult", ho un codice di riferimento al successo per ogni documento (Item) relativo al pacchetto SIP che ho cercato di inviare in conservazione, e.g. OK,KO,ecc. se uno solo di questi Item per esempio quello relativo alla Fattura ha avuto problemi ed è un "KO", tutti gli altri documenti del medesimo pacchetto SIP, come la Delibera con i relativi aggregati/allegati vengono "rifiutati" dal DAX, in modo tale che se correggo il singolo documento errato e reinvio il pacchetto SIP i documenti che prima erano corretti appunto la Delibera non sono già presenti nel sistema DAX, ma vengono inseriti tutti insieme? cioè la mia domanda è l'inserimento in conservazione è relativo ai singoli documenti principali del pacchetto SIP o relativo al pacchetto SIP ?
+
+RISPOSTA 3: Successivamente alla presa in carico dal Sistema di Conservazione, il sistema produttore riceve un ticket attraverso il quale può in seguito richiedere l'esito dell'invio di quel SIP (utilizzando il servizio esposto dal WS e specificando l'IdSip). L'esito rappresenta il rapporto di versamento (RDV), contenente lo stato di trasmissione/elaborazione ed il dettaglio dell'elaborazione (cosa è stato accettato in conservazione e cosa no e l'eventuale motivazione).Quindi rispondendo alla sua domanda, l'inserimento in conservazione è relativo ad ogni singolo elemento di cui è composto il Pacchetto di Versamento (SD e UA) e nell'RDV può verificarne l'esito.
+
+DOMANDA 4: In relazione alla domanda 3: metto in evidenza un caso d'uso che mi lascia dei dubbi in relazione alla risposta datomi alla domanda 3 se io ho un SIPManifest con una Delibera (Documento Principale P) e i suoi allegati (Allegati ALL), se uno degli allegati ha qualcosa che non va per il DAX (quindi per un singolo elemento interno alla scheda documentale SD costituita dal documento principale + allegati) mi annulla tutta la SD relativa a tale allegato assegnando il valore KO al documento principale nel RDV anche se il documento principale in se come singolo elemento era corretto? oppure RDV mi ritorna OK per il documento principale e una voce di KO per il singolo allegato errato?
+
+RISPOSTA 4: L'esito di successo può essere parziale: se vi sono più allegati ed uno di essi ha errori, esso viene escluso ma gli altri entrano in conservazione.
+
+DOMANDA 5: La lista completa dei codici esito del SipEsitoResponse -> ServiceReturn è 0, 1? Se non fornire la lista grazie.
+
+RISPOSTA 5: La lista è esaustiva
+
+DOMANDA 6: La lista completa dei codici errore del SipEsitoResponse -> ServiceReturn è 0, 1? Se non fornire la lista grazie.
+
+RISPOSTA 6: La lista è esaustiva
+
+DOMANDA 7: La lista completa dei codici di esito del singolo item del SipResult è OK, KO, REVISIONE, INVIO? Se non fornire la lista grazie.
+
+RISPOSTA 7: In base al SIPResult.xsd gli esiti sono:
+
+Codice dell'esito dell'elaborazione di un item o documento del SIP
+
+Elaborato senza errori nè avvertimenti
+
+Non accettabile perchè riscontrati errori
+
+Elaborato con avvertimenti (e nessun errore)
+
+DOMANDA 8: La lista completa dei codici di stato è IN ELABORAZIONE, PRONTO, ELABORATO CON SUCCESSO ? Se non fornire la lista grazie.
+
+RISPOSTA 8:
+
+La lista completa è la seguente:
+
+Elaborato con successo
+
+In errore
+
+In errore di business
+
+In fase di invio al core
+
+Inviato al core
+
+Preso in carico dal core
+
+Ricevuto dal core
+
+Prego
+
+DOMANDA 9: Gli applicativi degli enti forniscono le seguenti classi documentali specializzate "Autorizzazioni" e "Concessioni" che quasi sicuramente andranno a referenziare la vostra classe documentale "Determina", anche qui per specificare questa tipologia basta fare nello stesso modo che è stato indicato per distinguere le "Delibere di giunta" dalle "Delibera di consiglio" della classe documentale "Delibera"? cioè basta specificare il valore nel tag IdentificativFormaNativa del SIPManifest.xsd per esempio:
+
+Autorizzazione - Approvazione delle linee guida per la valutazione etc...
+
+Approvazione delle linee guida per la valutazione etc...
+
+RISPOSTA 9: Seguire quanto indicato nelle schede tecniche disponibili in http://www.regione.toscana.it/-/dax-infrastruttura-per-la-conservazione-a-norma-dei-documenti-informatici
+
+in cuio si evince chiaramente che il tipo di delibera è da inserire nel segmento seguente
+
+Delibera di Consiglio
+
+DOMANDA 10: Gli applicativi degli enti usufruiscono di diverse classi documentali customizzate per i propri usi, su richiesta degli enti vi è la disponibilità da parte di DAX di realizzare tali classi customizzate per una relazione diretta fra le classi documentali enti e di dax?
+
+RISPOSTA 10: La richiesta di customizzazione delle classi documentali deve essere richiesta i referenti della Regione Toscana.
+
+DOMANDA 11: Le informazioni del SIPManifest.xsd in relazione alle Unità archivistiche (UA), nello specifico tutte le informazioni inerenti al tag "UAStdInfo" devono essere settate solo per il servizio FTP o sono valori che devono essere riempiti anche per i servizi SOAP?
+
+RISPOSTA 11: Prima di tutto per i servizi FTP gli Enti non hanno visibilità del SIPManifest. Per il canale FTP le informazioni relative alla UAStdInfo sono contenute a livello nome cartelle/file secondo le specifiche concordate con l'Ente.
+
+DOMANDA 12: In relazione alla domanda 10: Gli applicativi degli enti per diverse lassi documentali hanno la voce "Destinatari del contratto/ordinanza/fattura/ecc." settata come obbligatoria se come mi è stato detto non presente nelle vostre classi documentali se ci fosse necessità di integrare queste proprietà gli enti vi devono contattare direttamente?
+
+RISPOSTA 12:
+
+DOMANDA 13: In relazione alla domanda 10: Nella classe documentale delle Fatture per le proprietà obligatorie generate dagli applicativi degli enti "scadenzaFattura" (Scadenza della fattura - DATA) e "rilevanzaIVAFattura" (indica se la spesa è a rilevanza iva o meno - Boolean) e non previste da voi al momento, se ci fosse necessità di integrare queste proprietà gli enti vi devono contattare direttamente oppure sono inqualche modo già presenti nelle classi documentali?
+
+RISPOSTA 13:
+
+DOMANDA 14: In relazione alla domanda 10: Nella classe documentale dell'ordinanza , la proprietà generata dagli applicativi degli enti " registro_repertorio " che "i dentifica l'archivio, serie o repertorio in cui sono registrate le ordinanze" sembra essere assente o almeno non è stata individuata una proprietà con stesso valore semantico nella vostra classe documentale . E' corretto? e se si, stessa cosa se ci fosse necessità di integrare questa proprietà gli enti vi devono contattare direttamente?
+
+RISPOSTA 14:
+
+DOMANDA 15: Inoltre volevo avere maggiori dettagli sulla vostra politica di gestione dei fascicoli, se avete una classe documentale apposita o un set di proprietà specifiche .
+
+RISPOSTA 15 [2017-07-04] : Per quanto riguarda la tipologia documentale relativa a i fascicoli sarà disponibile entro fine mese.
+
+DOMANDA 15-bis: Avete concluso la politica del DAX in merito alla gestione dei fascicoli?
+
+RISPOSTA 15-bis: La gestione è ancora in corso
+
+DOMANDA 16: Inoltre volevo avere maggiori dettagli sulla vostra politica di gestione dei Documenti Protocollati, se avete una classe documentale apposita o un set di proprietà specifiche .
+
+RISPOSTA 16 [2017-??-??] : Per quanto riguarda la tipologia documentale relativa ai documenti protocollati è in sviluppo.
+
+DOMANDA 16-bis: Avete concluso la politica del DAX in merito alla gestione dei documenti protocollati?
+
+RISPOSTA 16-bis:La gestione è ancora in corso.

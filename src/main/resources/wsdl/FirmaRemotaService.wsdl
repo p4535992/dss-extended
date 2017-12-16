@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions 
+	xmlns:abd="http://www.abd.it/esb/FirmaEMarcaRemota/" 
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"  
+	name="FirmaEMarcaRemota" 
+	targetNamespace="http://www.abd.it/esb/FirmaEMarcaRemota/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://www.abd.it/esb/FirmaEMarcaRemota/">
+
+      <xsd:simpleType name="StringMaxLength100Type">
+      		<xsd:restriction base="xsd:string">
+      			<xsd:maxLength value="100"></xsd:maxLength>
+      		</xsd:restriction>
+      </xsd:simpleType>
+      
+      <xsd:simpleType name="StringMaxLength200Type">
+      		<xsd:restriction base="xsd:string">
+      			<xsd:maxLength value="200"></xsd:maxLength>
+      		</xsd:restriction>
+      </xsd:simpleType>
+      
+      <xsd:simpleType name="StringMaxLength500Type">
+      		<xsd:restriction base="xsd:string">
+      			<xsd:maxLength value="500"></xsd:maxLength>
+      		</xsd:restriction>
+      </xsd:simpleType>
+      
+      <xsd:complexType name="ResponseType">
+      		<xsd:sequence>
+      			<xsd:element name="Esito" maxOccurs="1" minOccurs="1" type="abd:StringMaxLength100Type" />
+      			<xsd:element name="Codice" type="xsd:int" maxOccurs="1" minOccurs="1" />
+      			<xsd:element name="Descrizione" maxOccurs="1" minOccurs="1" type="abd:StringMaxLength500Type" />
+      		</xsd:sequence>
+      	</xsd:complexType>
+      
+
+      <xsd:complexType name="FirmaRemotaRequestType">
+      	<xsd:sequence>
+      		<xsd:element name="Username" maxOccurs="1" minOccurs="1"
+      			type="abd:StringMaxLength100Type" />
+      		<xsd:element name="Password" maxOccurs="1" minOccurs="1"
+      			type="abd:StringMaxLength100Type" />
+      		<xsd:element name="OTP" maxOccurs="1" minOccurs="1"
+      			type="abd:StringMaxLength100Type" />
+      		<xsd:element name="Motivazione" maxOccurs="1"
+      			minOccurs="0" type="abd:StringMaxLength500Type" />
+      		<xsd:element name="Luogo" maxOccurs="1" minOccurs="0"
+      			type="abd:StringMaxLength200Type" />
+      		<xsd:element name="Firmatario" maxOccurs="1" minOccurs="0"
+      			type="abd:StringMaxLength200Type" />
+      		<xsd:element name="MarcaturaTemporale" maxOccurs="1" minOccurs="1"
+      			type="xsd:boolean" />
+      		<xsd:element name="FirmaAutomatica" maxOccurs="1" minOccurs="0"
+      			type="xsd:boolean" />
+      		<xsd:element name="ControFirma" maxOccurs="1" minOccurs="0"
+      			type="xsd:boolean" />
+      		<xsd:element name="TipoMarcatura" maxOccurs="1" minOccurs="0"
+      			type="abd:StringMaxLength200Type" />
+      		<xsd:element name="LevelBes" maxOccurs="1" minOccurs="0"
+      			type="xsd:boolean" />
+      		<xsd:element name="UtenteDelegante" maxOccurs="1" minOccurs="0"
+      			type="abd:StringMaxLength100Type" />
+            <xsd:element name="MetodoDiFirma" type="abd:StringMaxLength100Type" maxOccurs="1" minOccurs="1"></xsd:element>
+            <xsd:element name="Impronta" type="xsd:base64Binary"
+      			maxOccurs="1" minOccurs="0" />
+			<xsd:element name="Documento" type="xsd:base64Binary"
+      			maxOccurs="1" minOccurs="0" />
+      		<xsd:element name="IdentificativoDocumento" type="abd:StringMaxLength100Type"
+      			maxOccurs="1" minOccurs="0" />
+      	</xsd:sequence>
+      </xsd:complexType>
+    
+      <xsd:complexType name="FirmaRemotaResponseType">
+      	<xsd:complexContent>
+      		<xsd:extension base="abd:ResponseType">
+      			<xsd:choice>
+      				<xsd:element name="ImprontaFirmata" type="xsd:base64Binary" maxOccurs="1" minOccurs="0" />
+      				<xsd:element name="DocumentoFirmato" type="xsd:base64Binary" maxOccurs="1" minOccurs="0" />
+      				<xsd:element name="IdentificativoDocumentoFirmato" type="abd:StringMaxLength100Type" maxOccurs="1" minOccurs="0" />
+      			</xsd:choice>
+      		</xsd:extension>
+      	</xsd:complexContent>
+      </xsd:complexType>
+
+      <xsd:complexType name="FirmaRemotaRequestTypeList">
+	      <xsd:sequence>
+	            <xsd:element name="ListaRichiesteFirma" type="abd:FirmaRemotaRequestType" maxOccurs="unbounded" minOccurs="0" />
+	      </xsd:sequence>
+	  </xsd:complexType>
+      
+      <xsd:complexType name="FirmaRemotaResponseTypeList">
+      	<xsd:complexContent>
+      		<xsd:extension base="abd:ResponseType">
+      			<xsd:choice>
+      				 <xsd:element name="ListaRisposteFirma" type="abd:FirmaRemotaResponseType" maxOccurs="unbounded" minOccurs="0" />
+      			</xsd:choice>
+      		</xsd:extension>
+      	</xsd:complexContent>      
+	  </xsd:complexType>
+	  
+	  <xsd:complexType name="VerificaFirmaRemotaRequestType">
+	      <xsd:sequence>
+	      		<xsd:element name="FileSigned2Verify" 
+	      			type="xsd:base64Binary" maxOccurs="1" minOccurs="1" />
+    			<xsd:element name="ImprontaFirmata" 
+    				type="xsd:base64Binary" maxOccurs="1" minOccurs="0" />
+	            <xsd:element name="TipoDocumentoDaVerificare" maxOccurs="1" minOccurs="0"
+      				type="abd:StringMaxLength100Type" />
+	      		<xsd:element name="KeystoreFile" maxOccurs="1" minOccurs="0"
+	      			type="abd:StringMaxLength100Type" />
+	      		<xsd:element name="PasswordKeystore" maxOccurs="1" minOccurs="0"
+	      			type="abd:StringMaxLength100Type" />
+	      		<xsd:element name="Alias" maxOccurs="1" minOccurs="0"
+	      			type="abd:StringMaxLength100Type" />
+	      </xsd:sequence>
+	  </xsd:complexType>
+	  
+	  <xsd:complexType name="VerificaFirmaRemotaResponseType">
+	  	<xsd:complexContent>
+      		<xsd:extension base="abd:ResponseType">
+      			<xsd:choice>
+      				 <xsd:element name="Messaggio" type="abd:StringMaxLength100Type" maxOccurs="1" minOccurs="0" />
+      			</xsd:choice>
+      		</xsd:extension>
+      	</xsd:complexContent> 	  	
+	  </xsd:complexType>
+	  
+	   <xsd:complexType name="MarcaturaFirmaRemotaRequestType">
+	      <xsd:sequence>
+	      		<xsd:element name="File2Mark" 
+	      			type="xsd:base64Binary" maxOccurs="1" minOccurs="1" />
+	            <xsd:element name="TipoMarcatura" maxOccurs="1" minOccurs="0"
+      				type="abd:StringMaxLength100Type" />
+	      		<xsd:element name="Username" maxOccurs="1" minOccurs="1"
+	      			type="abd:StringMaxLength100Type" />
+	      		<xsd:element name="Password" maxOccurs="1" minOccurs="1"
+	      			type="abd:StringMaxLength100Type" />
+	      		<xsd:element name="Otp" maxOccurs="1" minOccurs="0"
+	      			type="abd:StringMaxLength100Type" />
+	      </xsd:sequence>
+	  </xsd:complexType>
+	  
+	  <xsd:complexType name="MarcaturaFirmaRemotaResponseType">
+	  	<xsd:complexContent>
+      		<xsd:extension base="abd:ResponseType">
+      			<xsd:choice>
+	      			<xsd:element name="ImprontaMarcatura" type="xsd:base64Binary" maxOccurs="1" minOccurs="0" />
+	    		 	<xsd:element name="DocumentoMarcatura" type="xsd:base64Binary" maxOccurs="1" minOccurs="0" />
+	    		 	<xsd:element name="IdentificativoDocumentoMarcatura" type="abd:StringMaxLength100Type" maxOccurs="1" minOccurs="0" />
+      			</xsd:choice>
+      		</xsd:extension>
+      	</xsd:complexContent> 	 	  	
+	  </xsd:complexType>
+
+     <xsd:element name="FirmaRemotaRequest" type="abd:FirmaRemotaRequestType">
+      </xsd:element>
+      
+      <xsd:element name="FirmaRemotaResponse" type="abd:FirmaRemotaResponseType">
+      </xsd:element>
+      
+      <xsd:element name="FirmaRemotaRequestList" type="abd:FirmaRemotaRequestTypeList">
+      </xsd:element>
+      
+      <xsd:element name="FirmaRemotaResponseList" type="abd:FirmaRemotaResponseTypeList">
+      </xsd:element>
+      
+       <xsd:element name="VerificaFirmaRemotaRequest" type="abd:VerificaFirmaRemotaRequestType">
+      </xsd:element>
+      
+      <xsd:element name="VerificaFirmaRemotaResponse" type="abd:VerificaFirmaRemotaResponseType">
+      </xsd:element>
+      
+      <xsd:element name="MarcaturaFirmaRemotaRequest" type="abd:MarcaturaFirmaRemotaRequestType">
+      </xsd:element>
+      
+      <xsd:element name="MarcaturaFirmaRemotaResponse" type="abd:MarcaturaFirmaRemotaResponseType">
+      </xsd:element>
+      
+      <xsd:complexType name="CopiaConformeRequestType">
+      	<xsd:sequence>
+      		<xsd:element name="IdentificativoDocumento" type="abd:StringMaxLength100Type"
+      			maxOccurs="1" minOccurs="1" />
+      	</xsd:sequence>
+      </xsd:complexType>
+    
+      <xsd:complexType name="CopiaConformeResponseType">
+      	<xsd:complexContent>
+      		<xsd:extension base="abd:ResponseType">
+      			<xsd:sequence>
+      				<xsd:element name="CopiaConforme" type="xsd:base64Binary" maxOccurs="1" minOccurs="0" />
+      			</xsd:sequence>
+      		</xsd:extension>
+      	</xsd:complexContent>
+      </xsd:complexType>
+     
+     <xsd:element name="CopiaConformeRequest" type="abd:CopiaConformeRequestType">
+      </xsd:element>
+      
+      <xsd:element name="CopiaConformeResponse" type="abd:CopiaConformeResponseType">
+      </xsd:element>
+      
+      <xsd:complexType name="RecuperaOriginaleDaCopiaRequestType">
+      	<xsd:sequence>
+      		<xsd:element name="IdentificativoDocumento" type="abd:StringMaxLength100Type"
+      			maxOccurs="1" minOccurs="1" />
+      		<xsd:element name="CodiceDiControllo" type="abd:StringMaxLength100Type"
+      			maxOccurs="1" minOccurs="1" />
+      	</xsd:sequence>
+      </xsd:complexType>
+    
+      <xsd:complexType name="RecuperaOriginaleDaCopiaResponseType">
+      	<xsd:complexContent>
+      		<xsd:extension base="abd:ResponseType">
+      			<xsd:sequence>
+      				<xsd:element name="CopiaOriginale" type="xsd:base64Binary" maxOccurs="1" minOccurs="0" />
+      			</xsd:sequence>
+      		</xsd:extension>
+      	</xsd:complexContent>
+      </xsd:complexType>
+     
+     <xsd:element name="RecuperaOriginaleDaCopiaRequest" type="abd:RecuperaOriginaleDaCopiaRequestType">
+      </xsd:element>
+      
+      <xsd:element name="RecuperaOriginaleDaCopiaResponse" type="abd:RecuperaOriginaleDaCopiaResponseType">
+      </xsd:element>
+
+      </xsd:schema>
+  </wsdl:types>
+  
+  <wsdl:message name="FirmaRemotaRequestMessage">
+  	<wsdl:part name="message" element="abd:FirmaRemotaRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="FirmaRemotaResponseMessage">
+  	<wsdl:part name="message" element="abd:FirmaRemotaResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="FirmaRemotaRequestMessageList">
+	<wsdl:part name="list" element="abd:FirmaRemotaRequestList" />
+  </wsdl:message>
+  <wsdl:message name="FirmaRemotaResponseMessageList">
+	<wsdl:part name="list" element="abd:FirmaRemotaResponseList" />
+  </wsdl:message>  
+  <wsdl:message name="VerificaFirmaRemotaRequestMessage">
+	<wsdl:part name="message" element="abd:VerificaFirmaRemotaRequest" />
+  </wsdl:message>
+  <wsdl:message name="VerificaFirmaRemotaResponseMessage">
+	<wsdl:part name="message" element="abd:VerificaFirmaRemotaResponse" />
+  </wsdl:message>
+  <wsdl:message name="MarcaturaFirmaRemotaRequestMessage">
+	<wsdl:part name="message" element="abd:MarcaturaFirmaRemotaRequest" />
+  </wsdl:message>
+  <wsdl:message name="MarcaturaFirmaRemotaResponseMessage">
+	<wsdl:part name="message" element="abd:MarcaturaFirmaRemotaResponse" />
+  </wsdl:message>
+
+  <wsdl:message name="CopiaConformeRequestMessage">
+  	<wsdl:part name="message" element="abd:CopiaConformeRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="CopiaConformeResponseMessage">
+  	<wsdl:part name="message" element="abd:CopiaConformeResponse"></wsdl:part>
+  </wsdl:message>
+  
+  <wsdl:message name="RecuperaOriginaleDaCopiaRequestMessage">
+  	<wsdl:part name="message" element="abd:RecuperaOriginaleDaCopiaRequest"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="RecuperaOriginaleDaCopiaResponseMessage">
+  	<wsdl:part name="message" element="abd:RecuperaOriginaleDaCopiaResponse"></wsdl:part>
+  </wsdl:message>
+  
+  <wsdl:portType name="FirmaRemotaType">
+  	<wsdl:operation name="FirmaRemota">
+  		<wsdl:input message="abd:FirmaRemotaRequestMessage"></wsdl:input>
+  		<wsdl:output message="abd:FirmaRemotaResponseMessage"></wsdl:output>
+  	</wsdl:operation>
+  </wsdl:portType>
+  
+  <wsdl:portType name="FirmaRemotaTypeList">
+  	<wsdl:operation name="FirmaRemotaLista">
+  		<wsdl:input message="abd:FirmaRemotaRequestMessageList"></wsdl:input>
+  		<wsdl:output message="abd:FirmaRemotaResponseMessageList"></wsdl:output>
+  	</wsdl:operation>
+  </wsdl:portType>
+  
+  <wsdl:portType name="VerificaFirmaRemotaType">
+  	<wsdl:operation name="VerificaFirmaRemota">
+  		<wsdl:input message="abd:VerificaFirmaRemotaRequestMessage"></wsdl:input>
+  		<wsdl:output message="abd:VerificaFirmaRemotaResponseMessage"></wsdl:output>
+  	</wsdl:operation>
+  </wsdl:portType>
+  
+  <wsdl:portType name="MarcaturaFirmaRemotaType">
+  	<wsdl:operation name="MarcaturaFirmaRemota">
+  		<wsdl:input message="abd:MarcaturaFirmaRemotaRequestMessage"></wsdl:input>
+  		<wsdl:output message="abd:MarcaturaFirmaRemotaResponseMessage"></wsdl:output>
+  	</wsdl:operation>
+  </wsdl:portType>
+    
+  <wsdl:portType name="CopiaConformeType">
+  	<wsdl:operation name="CopiaConforme">
+  		<wsdl:input message="abd:CopiaConformeRequestMessage"></wsdl:input>
+  		<wsdl:output message="abd:CopiaConformeResponseMessage"></wsdl:output>
+  	</wsdl:operation>
+  </wsdl:portType>
+  
+  <wsdl:portType name="RecuperaOriginaleDaCopiaType">
+  	<wsdl:operation name="RecuperaOriginaleDaCopia">
+  		<wsdl:input message="abd:RecuperaOriginaleDaCopiaRequestMessage"></wsdl:input>
+  		<wsdl:output message="abd:RecuperaOriginaleDaCopiaResponseMessage"></wsdl:output>
+  	</wsdl:operation>
+  </wsdl:portType>
+  
+  <wsdl:binding name="FirmaRemotaSOAP" type="abd:FirmaRemotaType">
+  	<soap:binding style="document"
+  		transport="http://schemas.xmlsoap.org/soap/http" />
+	  	<wsdl:operation name="FirmaRemota">
+	  		<soap:operation
+	  			soapAction="http://www.abd.it/esb/FirmaEMarcaRemota/FirmaRemota" />
+	  		<wsdl:input>
+	  			<soap:body use="literal" />
+	  		</wsdl:input>
+	  		<wsdl:output>
+	  			<soap:body use="literal" />
+	  		</wsdl:output>
+	  	</wsdl:operation>
+  </wsdl:binding> 
+  
+  <wsdl:binding name="FirmaRemotaSOAPLista" type="abd:FirmaRemotaTypeList">
+  	<soap:binding style="document"
+  		transport="http://schemas.xmlsoap.org/soap/http" />
+	  	<wsdl:operation name="FirmaRemotaLista">
+	  		<soap:operation
+	  			soapAction="http://www.abd.it/esb/FirmaEMarcaRemota/FirmaRemotaLista" />
+	  		<wsdl:input>
+	  			<soap:body use="literal" />
+	  		</wsdl:input>
+	  		<wsdl:output>
+	  			<soap:body use="literal" />
+	  		</wsdl:output>
+	  	</wsdl:operation>
+  </wsdl:binding> 
+  
+  <wsdl:binding name="VerificaFirmaRemotaSOAP" type="abd:VerificaFirmaRemotaType">
+  	<soap:binding style="document"
+  		transport="http://schemas.xmlsoap.org/soap/http" />
+	  	<wsdl:operation name="VerificaFirmaRemota">
+	  		<soap:operation
+	  			soapAction="http://www.abd.it/esb/FirmaEMarcaRemota/VerificaFirmaRemota" />
+	  		<wsdl:input>
+	  			<soap:body use="literal" />
+	  		</wsdl:input>
+	  		<wsdl:output>
+	  			<soap:body use="literal" />
+	  		</wsdl:output>
+	  	</wsdl:operation>
+  </wsdl:binding> 
+  
+   <wsdl:binding name="MarcaturaFirmaRemotaSOAP" type="abd:MarcaturaFirmaRemotaType">
+  	<soap:binding style="document"
+  		transport="http://schemas.xmlsoap.org/soap/http" />
+	  	<wsdl:operation name="MarcaturaFirmaRemota">
+	  		<soap:operation
+	  			soapAction="http://www.abd.it/esb/FirmaEMarcaRemota/MarcaturaFirmaRemota" />
+	  		<wsdl:input>
+	  			<soap:body use="literal" />
+	  		</wsdl:input>
+	  		<wsdl:output>
+	  			<soap:body use="literal" />
+	  		</wsdl:output>
+	  	</wsdl:operation>
+  </wsdl:binding> 
+  
+  <wsdl:binding name="CopiaConformeSOAP" type="abd:CopiaConformeType">
+  <soap:binding style="document"
+  		transport="http://schemas.xmlsoap.org/soap/http" />
+  	<wsdl:operation name="CopiaConforme">
+  		<soap:operation
+  			soapAction="http://www.abd.it/esb/FirmaEMarcaRemota/CopiaConforme" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+  </wsdl:binding>
+  
+  <wsdl:binding name="RecuperaOriginaleDaCopiaSOAP" type="abd:RecuperaOriginaleDaCopiaType">
+  <soap:binding style="document"
+  		transport="http://schemas.xmlsoap.org/soap/http" />
+  	<wsdl:operation name="RecuperaOriginaleDaCopia">
+  		<soap:operation
+  			soapAction="http://www.abd.it/esb/FirmaEMarcaRemota/RecuperaOriginaleDaCopia" />
+  		<wsdl:input>
+  			<soap:body use="literal" />
+  		</wsdl:input>
+  		<wsdl:output>
+  			<soap:body use="literal" />
+  		</wsdl:output>
+  	</wsdl:operation>
+  </wsdl:binding>
+  
+  <wsdl:service name="FirmaRemota">
+  	<wsdl:port binding="abd:FirmaRemotaSOAP" name="FirmaRemotaSOAP">
+  		<soap:address location="http://www.abd.it/esb/FirmaEMarcaRemota/FirmaRemota" />
+  	</wsdl:port>
+  </wsdl:service>
+    
+  <wsdl:service name="FirmaRemotaLista">
+  	<wsdl:port binding="abd:FirmaRemotaSOAPLista" name="FirmaRemotaSOAPLista">
+  		<soap:address location="http://www.abd.it/esb/FirmaEMarcaRemota/FirmaRemotaLista" />
+  	</wsdl:port>
+  </wsdl:service>
+  
+  <wsdl:service name="VerificaFirmaRemota">
+  	<wsdl:port binding="abd:VerificaFirmaRemotaSOAP" name="VerificaFirmaRemotaSOAP">
+  		<soap:address location="http://www.abd.it/esb/FirmaEMarcaRemota/VerificaFirmaRemota" />
+  	</wsdl:port>
+  </wsdl:service>
+  
+  <wsdl:service name="MarcaturaFirmaRemota">
+  	<wsdl:port binding="abd:MarcaturaFirmaRemotaSOAP" name="MarcaturaFirmaRemotaSOAP">
+  		<soap:address location="http://www.abd.it/esb/FirmaEMarcaRemota/MarcaturaFirmaRemota" />
+  	</wsdl:port>
+  </wsdl:service>
+
+   <wsdl:service name="CopiaConforme">
+  	<wsdl:port binding="abd:CopiaConformeSOAP" name="CopiaConformeSOAP">
+  		<soap:address location="http://www.abd.it/esb/FirmaEMarcaRemota/CopiaConforme" />
+  	</wsdl:port>
+  </wsdl:service>
+  
+   <wsdl:service name="RecuperaOriginaleDaCopia">
+  	<wsdl:port binding="abd:RecuperaOriginaleDaCopiaSOAP" name="RecuperaOriginaleDaCopiaSOAP">
+  		<soap:address location="http://www.abd.it/esb/FirmaEMarcaRemota/RecuperaOriginaleDaCopia" />
+  	</wsdl:port>
+  </wsdl:service>
+  
+</wsdl:definitions>
