@@ -82,9 +82,13 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.CRLNumber;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.tsp.TSPException;
+import org.bouncycastle.tsp.TSPValidationException;
 import org.bouncycastle.x509.extension.AuthorityKeyIdentifierStructure;
 /**
  * Concentriamo tutte le funzionalita nelle varie parti del codice relative ai certificati in questa classe
@@ -1884,6 +1888,36 @@ public class CertificateUtils{
 			throw new CRLException("Error retrieving CRL authority key identifier", e);
 		}
 		return result;
+	}
+	
+    public static boolean validateCertificateTSP(X509Certificate paramX509Certificate)		    
+	  {
+    	try{
+		    if (paramX509Certificate.getVersion() != 3)
+		      throw new IllegalArgumentException("Certificate must have an ExtendedKeyUsage extension.");
+		    byte[] arrayOfByte = paramX509Certificate.getExtensionValue(X509Extensions.ExtendedKeyUsage.getId());
+		    if (arrayOfByte == null)
+		      throw new TSPValidationException("Certificate must have an ExtendedKeyUsage extension.");
+		    if (!(paramX509Certificate.getCriticalExtensionOIDs().contains(X509Extensions.ExtendedKeyUsage.getId())))
+		      throw new TSPValidationException("Certificate must have an ExtendedKeyUsage extension marked as critical.");
+		    ASN1InputStream localASN1InputStream = new ASN1InputStream(new ByteArrayInputStream(arrayOfByte));
+		    try
+		    {
+		      localASN1InputStream = new ASN1InputStream(new ByteArrayInputStream(((ASN1OctetString)localASN1InputStream.readObject()).getOctets()));
+		      ExtendedKeyUsage localExtendedKeyUsage = ExtendedKeyUsage.getInstance(localASN1InputStream.readObject());
+		      if ((!(localExtendedKeyUsage.hasKeyPurposeId(KeyPurposeId.id_kp_timeStamping))) || (localExtendedKeyUsage.size() != 1))
+		        throw new TSPValidationException("ExtendedKeyUsage not solely time stamping.");
+		      
+		      return true;
+		    }
+		    catch (IOException localIOException)
+		    {
+		      throw new TSPValidationException("cannot process ExtendedKeyUsage extension");
+		    }
+    	}catch(TSPException ex){
+    		logger.error(ex.getMessage(),ex);
+    		return false;
+    	}
 	}
    
 }

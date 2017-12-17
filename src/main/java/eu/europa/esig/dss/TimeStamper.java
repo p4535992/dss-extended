@@ -1,6 +1,7 @@
 package eu.europa.esig.dss;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -67,6 +68,14 @@ public abstract class TimeStamper
     
     public abstract NonceSource getNonceSource();
     
+    public abstract String getKeyStorePath();
+    public abstract String getKeyStoreType();
+    public abstract String getKeyStorePassword();
+    
+    public abstract String getTrustStorePath();
+    public abstract String getTrustStoreType();
+    public abstract String getTrustStorePassword();
+    
     //Generate method
     
     public abstract TimestampDataLoader timestampDataLoader();
@@ -75,13 +84,16 @@ public abstract class TimeStamper
 
     public abstract TimeStampResponse timestamp(byte[] data) throws IOException,TSPException;
 
-    //Re-set method
+    //Re-set method avoid to rebuild the entire object
     
     public abstract void setProxy(String address, int port);
     public abstract void setProxy(String address, int port, boolean isHttps);
     public abstract void setProxy(String address, int port,String username,String password);
     public abstract void setProxy(String address, int port,String username,String password, boolean isHttps);
     public abstract void setProxy(String address, int port, final String username, final String password,String excludedHosts,boolean isHttps);
+    
+    public abstract void setKeyStore(String keyStorePath, String KeyStoreType,String KeyStorePassword);
+    public abstract void setTrustStore(String trustStorePath, String trustStoreType,String trustStorePassword);
     
     public static class Builder
     {
@@ -122,12 +134,14 @@ public abstract class TimeStamper
             return this;
         }
         
-        public Builder setTsaScheme(String tsaScheme) throws MalformedURLException
+        public Builder setTsaScheme(String tsaScheme) throws IOException
         {
         	String scheme =  tsaScheme.toLowerCase();
         	//support only http and https
         	if(scheme.equals("http") || scheme.equals("https")){
         		concreteTimeStamper.tsaScheme = scheme;
+        	}else{
+        		throw new IOException("The scheme " + tsaScheme + " is not supported! only HTTP and HTTPS are supported for now ");
         	}
             return this;
         }
@@ -174,7 +188,7 @@ public abstract class TimeStamper
 	            proxyProperties.setPassword(password);
 	            proxyProperties.setUser(username);
             }
-            if(excludedHosts==null && !excludedHosts.isEmpty()){
+            if(excludedHosts!=null && !excludedHosts.isEmpty()){
             	proxyProperties.setExcludedHosts(excludedHosts);
             }
             ProxyConfig proxyConfig = new ProxyConfig();
@@ -238,6 +252,21 @@ public abstract class TimeStamper
             }
             return this;
         }
+        
+
+		public void setKeyStore(String keyStorePath, String keyStoreType, String keyStorePassword) {
+			concreteTimeStamper.keyStorePath=keyStorePath;
+			concreteTimeStamper.keyStoreType=keyStoreType;
+			concreteTimeStamper.keyStorePassword=keyStorePassword;				
+		}
+
+
+		public void setTrustStore(String trustStorePath, String trustStoreType, String trustStorePassword) {
+			concreteTimeStamper.trustStorePath=trustStorePath;
+			concreteTimeStamper.trustStoreType=trustStoreType;
+			concreteTimeStamper.trustStorePassword=trustStorePassword;					
+		}
+	
 
         public TimeStamper build() throws CloneNotSupportedException
         {
@@ -261,7 +290,15 @@ public abstract class TimeStamper
             private NonceSource nonCeSource; 
             private ProxyConfig proxyConfig;
             private String tsaScheme = "http";
+            
+            private String keyStorePath;
+            private String keyStoreType;
+            private String keyStorePassword;
 
+            private String trustStorePath;
+            private String trustStoreType;
+            private String trustStorePassword;
+            
             @Override
             public URL getTsaUrl()
             {
@@ -344,6 +381,36 @@ public abstract class TimeStamper
 			}
 			
 			@Override
+			public String getKeyStorePath() {
+				return this.keyStorePath;
+			}
+
+			@Override
+			public String getKeyStoreType() {
+				return keyStoreType;
+			}
+
+			@Override
+			public String getKeyStorePassword() {
+				return keyStorePassword;
+			}
+
+			@Override
+			public String getTrustStorePath() {
+				return trustStorePath;
+			}
+
+			@Override
+			public String getTrustStoreType() {
+				return trustStoreType;
+			}
+
+			@Override
+			public String getTrustStorePassword() {
+				return trustStorePassword;
+			}
+			
+			@Override
 			public TimestampDataLoader timestampDataLoader(){
 				//Start prepare tspdataloader
 				TimestampDataLoader tspDataLoader =  new TimestampDataLoader();//Mange request to TSP server with a proxy		
@@ -354,10 +421,10 @@ public abstract class TimeStamper
 						tsaPassword!= null && !tsaPassword.isEmpty()){
 					tspDataLoader.addAuthentication(tsaUrl.toString(), tsaPort, tsaScheme, tsaUsername,tsaPassword);
 				}
+
 				return tspDataLoader;
 			}
-			
-			
+						
 			@Override
             public TimeStampResponse timestamp() throws IOException, TSPException
             {
@@ -437,6 +504,7 @@ public abstract class TimeStamper
             {
                 setProxy(address, port, null, null,null,isHttps);
             }
+            
             @Override
             public void setProxy(String address, int port, final String username, final String password,String excludedHosts,boolean isHttps)
             {
@@ -471,7 +539,21 @@ public abstract class TimeStamper
                 }
                 this.proxyConfig = proxyConfig;               
             }
-		
+            
+            @Override
+			public void setKeyStore(String keyStorePath, String keyStoreType, String keyStorePassword) {
+				this.keyStorePath=keyStorePath;
+				this.keyStoreType=keyStoreType;
+				this.keyStorePassword=keyStorePassword;				
+			}
+
+			@Override
+			public void setTrustStore(String trustStorePath, String trustStoreType, String trustStorePassword) {
+				this.trustStorePath=trustStorePath;
+				this.trustStoreType=trustStoreType;
+				this.trustStorePassword=trustStorePassword;					
+			}
+
         }
     }
 }

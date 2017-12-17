@@ -1002,7 +1002,7 @@ public class DSS5Utils {
 	 */
 	private static TimeStampResponse prepareTimeStampResponse(String tspServer,byte[] toDigest,DataLoader dataLoader,DigestAlgorithm digestAlgorithm,NonceSource nonceSource,String policyOid) throws IOException, TSPException{	
 		try {
-			final byte[] digest = digest(digestAlgorithm, toDigest);	
+			final byte[] digest = DSSUtils.digest(digestAlgorithm, toDigest);	
 			logger.debug("Timestamp digest algorithm: " + digestAlgorithm.getName());
 			logger.debug("Timestamp digest value    : " + Utils.toHex(digest));
 			// Setup the time stamp request
@@ -1556,132 +1556,132 @@ public class DSS5Utils {
 	//https://github.com/esig/dss/blob/master/dss-spi/src/main/java/eu/europa/esig/dss/DSSUtils.java
 	//==========================================================
 	
-	/**
-	 * This method digests the given string with SHA1 algorithm and encode returned array of bytes as hex string.
-	 *
-	 * @param stringToDigest
-	 *            Everything in the name
-	 * @return hex encoded digest value
-	 */
+//	/**
+//	 * This method digests the given string with SHA1 algorithm and encode returned array of bytes as hex string.
+//	 *
+//	 * @param stringToDigest
+//	 *            Everything in the name
+//	 * @return hex encoded digest value
+//	 */
 //	public static String getSHA1Digest(final String stringToDigest) {
 //		final byte[] digest = getMessageDigest(DigestAlgorithm.SHA1).digest(stringToDigest.getBytes());
 //		return DSSUtils.toHex(digest);
 //	}
 
-	/**
-	 * This method allows to digest the data with the given algorithm.
-	 *
-	 * @param digestAlgorithm
-	 *            the algorithm to use
-	 * @param data
-	 *            the data to digest
-	 * @return digested array of bytes
-	 */
-	public static byte[] digest(final DigestAlgorithm digestAlgorithm, final byte[] data) throws DSSException {
-		final MessageDigest messageDigest = getMessageDigest(digestAlgorithm);
-		// Calculate data digest
-		//messageDigest.update(data);
-		//byte[] digestValue = messageDigest.digest();
-		final byte[] digestValue = messageDigest.digest(data);
-		return digestValue;
-	}
-
-	/**
-	 * @param digestAlgorithm
-	 * @return
-	 * @throws NoSuchAlgorithmException
-	 */
-	public static MessageDigest getMessageDigest(final DigestAlgorithm digestAlgorithm) {
-		try {
-			final String digestAlgorithmOid = digestAlgorithm.getOid();
-			final MessageDigest messageDigest = MessageDigest.getInstance(digestAlgorithmOid, BouncyCastleProvider.PROVIDER_NAME);
-			return messageDigest;
-		} catch (GeneralSecurityException e) {
-			throw new DSSException("Digest algorithm '" + digestAlgorithm.getName() + "' error: " + e.getMessage(), e);
-		}
-	}
-
-	/**
-	 * This method allows to digest the data in the {@code InputStream} with the given algorithm.
-	 *
-	 * @param digestAlgo
-	 *            the algorithm to use
-	 * @param inputStream
-	 *            the data to digest
-	 * @return digested array of bytes
-	 */
-	public static byte[] digest(final DigestAlgorithm digestAlgo, final InputStream inputStream) throws DSSException {
-		try {
-
-			final MessageDigest messageDigest = getMessageDigest(digestAlgo);
-			final byte[] buffer = new byte[4096];
-			int count = 0;
-			while ((count = inputStream.read(buffer)) > 0) {
-				messageDigest.update(buffer, 0, count);
-			}
-			final byte[] digestValue = messageDigest.digest();
-			return digestValue;
-		} catch (IOException e) {
-			throw new DSSException(e);
-		}
-	}
-
-	public static byte[] digest(DigestAlgorithm digestAlgorithm, DSSDocument document) {
-		try (InputStream is = document.openStream()) {
-			return digest(digestAlgorithm, is);
-		} catch (IOException e) {
-			throw new DSSException(e);
-		}
-	}
-
-	public static byte[] digest(DigestAlgorithm digestAlgorithm, byte[]... data) {
-		final MessageDigest messageDigest = getMessageDigest(digestAlgorithm);
-		for (final byte[] bytes : data) {
-
-			messageDigest.update(bytes);
-		}
-		final byte[] digestValue = messageDigest.digest();
-		return digestValue;
-	}
-	
-	@Deprecated
-	public static  byte[] getDigest(byte []data, String hashAlgorithm) throws NoSuchAlgorithmException {
-		MessageDigest digest = MessageDigest.getInstance(hashAlgorithm);
-		return digest.digest(data);
-	}
-	
-	@Deprecated
-	public static  byte[] getDigest(File file, String algorithm)
-			throws NoSuchAlgorithmException, IOException {
-	
-		FileInputStream fileInputStream = new FileInputStream(file);
-		byte[] digest;
-		try {
-			digest = getDigest(fileInputStream, algorithm);
-			return digest;		
-		} catch (IOException e) {
-			throw e;
-		} finally {
-			try {
-				if (fileInputStream != null) {
-					fileInputStream.close();
-				}
-			} catch (IOException e) {
-			}
-		}
-	}
-	
-	@Deprecated
-	public static  byte[] getDigest(InputStream inputStream, String algorithm)
-			throws IOException, NoSuchAlgorithmException {
-		MessageDigest md = MessageDigest.getInstance(algorithm);
-		byte[] buffer = new byte[10000];
-		int i = 0;
-		while ((i = inputStream.read(buffer)) != -1) {
-			md.update(buffer, 0, i);
-		}
-		return md.digest();
-	}
+//	/**
+//	 * This method allows to digest the data with the given algorithm.
+//	 *
+//	 * @param digestAlgorithm
+//	 *            the algorithm to use
+//	 * @param data
+//	 *            the data to digest
+//	 * @return digested array of bytes
+//	 */
+//	public static byte[] digest(final DigestAlgorithm digestAlgorithm, final byte[] data) throws DSSException {
+//		final MessageDigest messageDigest = getMessageDigest(digestAlgorithm);
+//		// Calculate data digest
+//		//messageDigest.update(data);
+//		//byte[] digestValue = messageDigest.digest();
+//		final byte[] digestValue = messageDigest.digest(data);
+//		return digestValue;
+//	}
+//
+//	/**
+//	 * @param digestAlgorithm
+//	 * @return
+//	 * @throws NoSuchAlgorithmException
+//	 */
+//	public static MessageDigest getMessageDigest(final DigestAlgorithm digestAlgorithm) {
+//		try {
+//			final String digestAlgorithmOid = digestAlgorithm.getOid();
+//			final MessageDigest messageDigest = MessageDigest.getInstance(digestAlgorithmOid, BouncyCastleProvider.PROVIDER_NAME);
+//			return messageDigest;
+//		} catch (GeneralSecurityException e) {
+//			throw new DSSException("Digest algorithm '" + digestAlgorithm.getName() + "' error: " + e.getMessage(), e);
+//		}
+//	}
+//
+//	/**
+//	 * This method allows to digest the data in the {@code InputStream} with the given algorithm.
+//	 *
+//	 * @param digestAlgo
+//	 *            the algorithm to use
+//	 * @param inputStream
+//	 *            the data to digest
+//	 * @return digested array of bytes
+//	 */
+//	public static byte[] digest(final DigestAlgorithm digestAlgo, final InputStream inputStream) throws DSSException {
+//		try {
+//
+//			final MessageDigest messageDigest = getMessageDigest(digestAlgo);
+//			final byte[] buffer = new byte[4096];
+//			int count = 0;
+//			while ((count = inputStream.read(buffer)) > 0) {
+//				messageDigest.update(buffer, 0, count);
+//			}
+//			final byte[] digestValue = messageDigest.digest();
+//			return digestValue;
+//		} catch (IOException e) {
+//			throw new DSSException(e);
+//		}
+//	}
+//
+//	public static byte[] digest(DigestAlgorithm digestAlgorithm, DSSDocument document) {
+//		try (InputStream is = document.openStream()) {
+//			return digest(digestAlgorithm, is);
+//		} catch (IOException e) {
+//			throw new DSSException(e);
+//		}
+//	}
+//
+//	public static byte[] digest(DigestAlgorithm digestAlgorithm, byte[]... data) {
+//		final MessageDigest messageDigest = getMessageDigest(digestAlgorithm);
+//		for (final byte[] bytes : data) {
+//
+//			messageDigest.update(bytes);
+//		}
+//		final byte[] digestValue = messageDigest.digest();
+//		return digestValue;
+//	}
+//	
+//	@Deprecated
+//	public static  byte[] getDigest(byte []data, String hashAlgorithm) throws NoSuchAlgorithmException {
+//		MessageDigest digest = MessageDigest.getInstance(hashAlgorithm);
+//		return digest.digest(data);
+//	}
+//	
+//	@Deprecated
+//	public static  byte[] getDigest(File file, String algorithm)
+//			throws NoSuchAlgorithmException, IOException {
+//	
+//		FileInputStream fileInputStream = new FileInputStream(file);
+//		byte[] digest;
+//		try {
+//			digest = getDigest(fileInputStream, algorithm);
+//			return digest;		
+//		} catch (IOException e) {
+//			throw e;
+//		} finally {
+//			try {
+//				if (fileInputStream != null) {
+//					fileInputStream.close();
+//				}
+//			} catch (IOException e) {
+//			}
+//		}
+//	}
+//	
+//	@Deprecated
+//	public static  byte[] getDigest(InputStream inputStream, String algorithm)
+//			throws IOException, NoSuchAlgorithmException {
+//		MessageDigest md = MessageDigest.getInstance(algorithm);
+//		byte[] buffer = new byte[10000];
+//		int i = 0;
+//		while ((i = inputStream.read(buffer)) != -1) {
+//			md.update(buffer, 0, i);
+//		}
+//		return md.digest();
+//	}
 		
 	
 	//==========================================================
@@ -1931,7 +1931,7 @@ public class DSS5Utils {
     	//String name = new SimpleDateFormat("yyyyMMdd").format(Calendar.getInstance().getTime())+".tmp";
     	//File toTempSignDocument = File.createTempFile(name, ".tmp");
     	//FileUtils.writeByteArrayToFile(toTempSignDocument,fileToSign);
-    	String base64EncodeDigest = Base64.encodeBase64String(digest(digestAlgorithm,fileToSign));
+    	String base64EncodeDigest = Base64.encodeBase64String(DSSUtils.digest(digestAlgorithm,fileToSign));
     	DigestDocument retValue = null;
         if (null != digestAlgorithm) {
             retValue = new DigestDocument();

@@ -27,6 +27,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -82,6 +83,7 @@ import eu.europa.esig.dss.SignerLocation;
 import eu.europa.esig.dss.SigningOperation;
 import eu.europa.esig.dss.TimeStamper;
 import eu.europa.esig.dss.ToBeSigned;
+import eu.europa.esig.dss.TypeExtensionSign;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.cades.signature.CAdESServiceSignatureExtended;
 import eu.europa.esig.dss.client.NonceSource;
@@ -94,6 +96,7 @@ import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.SignatureScope;
+import eu.europa.esig.dss.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.x509.tsp.TSPSource;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESServiceSignatureExtended;
@@ -101,12 +104,11 @@ import eu.europa.esig.dss.xades.signature.XAdESServiceSignatureExtended;
 public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends AbstractPkiFactoryTestDocumentSignatureService<SP> {
 	
 	private org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SignUtilsDSS.class);
-
+	
+	//ABD Settings
 	protected byte[] improntaFirmata;
 	protected byte[] improntaNonFirmata;
 	
-	protected static final String BC = BouncyCastleProvider.PROVIDER_NAME;
-
 	//Current DSS Settings
 	protected eu.europa.esig.dss.DigestAlgorithm algorithm =  DigestAlgorithm.SHA256;;
 	protected TSPSource tspSource;
@@ -121,6 +123,7 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 	protected SignatureTokenConnection signatureTokenConnection;
 	protected SigningOperation signingOperation;
 	protected TimeStampResponse tspTimeStampResponse;
+	protected KeyStoreCertificateSource keyStoreCertificateSource;
 			
 	//DSS BLevel Settings
 	protected SignatureImageParameters signatureImageParameters;
@@ -158,13 +161,13 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 	protected String urlWs = "http://servizi.abd.it:9090/testFirmaRemota?wsdl";
 	protected String usernameWs;
 	protected String passwordWs;
-		
+	
+	//Other Settings
+	protected static final String BC = BouncyCastleProvider.PROVIDER_NAME;		
 //	private static final String TSP_CONTEXT = "/tsp";
 //	private static final String OCSP_CONTEXT = "/ocsp";
 //	private static final String CRL_CONTEXT = "/crl";
 //	private static final String CERTIFICATE_CONTEXT = "/certificate";
-	
-	//STATIC SETTNGS
 	protected static final String TSP_SERVER_DEFAULT = "https://freetsa.org/tsr";	
 	@Deprecated
 	protected static final String TSP_SERVER_TUGRAZ = "http://tsp.iaik.tugraz.at/tsp/TspRequest";
@@ -175,9 +178,7 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 	protected static final String TSP_SERVER_CERTUM = "http://time.certum.pl/";	
 	@Deprecated
 	protected static final String TSP_SERVER_CRYPTO = "http://www.cryptopro.ru/tsp/tsp.srf";
-
-	protected static final String TSP_SERVER_COMODOCA = "http://timestamp.comodoca.com/authenticode";
-	
+	protected static final String TSP_SERVER_COMODOCA = "http://timestamp.comodoca.com/authenticode";	
 	protected static String ALGORITHM_IDENTIFIER_DEFAULT = "SHA256WithRSA";
 		
 	//Additional Settings
@@ -187,22 +188,23 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 	protected boolean isNested = false;
 	protected boolean isExtended = false;
 	protected boolean isParallel = false;
-	protected boolean isWithTimeStamp = false;
-	protected boolean isWithLongTermDataCertificates =false;
-	protected boolean isWithLongTermDataCertificatesAndArchiveTimestamp = false;
 	protected boolean isOnlyMark = false;
 	protected boolean isOnlyHash = false;
 	
+	protected boolean isWithTimeStamp = false;
+	protected boolean isWithLongTermDataCertificates =false;
+	protected boolean isWithLongTermDataCertificatesAndArchiveTimestamp = false;
+
 	//Pades Setttings
 	protected String sigLocation;
 	protected String sigReason;
 	protected String sigSigner;
 	/**
-	 * @deprecated sembra inutilizzata da DSS
+	 * @deprecated not used from DSS
 	 */
 	protected String sigName;
 	/**
-	 * @deprecated sembra inutilizzata da DSS
+	 * @deprecated not used fromn DSS
 	 */
 	protected Date sigDate;
 	
@@ -216,19 +218,21 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 	// CONSTRUCTOR
 	//==============================================================================
 
-	public SignUtilsDSS(byte[] fileToSign) throws IOException, URISyntaxException, GeneralSecurityException {
-		this(SignatureLevel.CAdES_BASELINE_B,SignatureTokenType.PKCS12.name(),false,false,false,false,false,false,false,
-				SigningOperation.SIGN,fileToSign,
-				null,null,null,null,
-				null,null,null,
-				null,null
-				);	
-	}
-
+//	public SignUtilsDSS(byte[] fileToSign) throws IOException, URISyntaxException, GeneralSecurityException {
+//		this(SignatureLevel.CAdES_BASELINE_B,SignatureTokenType.PKCS12.name(),
+//				false,false,false,false,false,false,false,
+//				SigningOperation.SIGN,fileToSign,
+//				null,null,null,null,
+//				null,null,null,
+//				null,null
+//				);	
+//	}
+	
 	public SignUtilsDSS(SignatureLevel signatureLevel,SignatureTokenType signatureTokenType,
 			boolean isDetached,boolean isNested,boolean isCounterSign,boolean isOnlyMark,boolean isAutomatic,boolean isParallel,boolean isOnlyHash,
 			SigningOperation signingOperation,byte[] fileToSign) throws IOException, URISyntaxException, GeneralSecurityException {
-		this(signatureLevel,signatureTokenType.name(),isDetached,isNested,isCounterSign,isOnlyMark,isAutomatic,isParallel,isOnlyHash,
+		this(signatureLevel,signatureTokenType.name(),
+				isDetached,isNested,isCounterSign,isOnlyMark,isAutomatic,isParallel,isOnlyHash,
 				signingOperation,fileToSign,
 				null,null,null,null,
 				null,null,null,
@@ -239,7 +243,8 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 	public SignUtilsDSS(SignatureLevel signatureLevel,String signatureTokenType,
 			boolean isDetached,boolean isNested,boolean isCounterSign,boolean isOnlyMark,boolean isAutomatic,boolean isParallel,boolean isOnlyHash,
 			SigningOperation signingOperation,byte[] fileToSign) throws IOException, URISyntaxException, GeneralSecurityException {
-		this(signatureLevel,signatureTokenType,isDetached,isNested,isCounterSign,isOnlyMark,isAutomatic,isParallel,isOnlyHash,
+		this(signatureLevel,signatureTokenType,
+				isDetached,isNested,isCounterSign,isOnlyMark,isAutomatic,isParallel,isOnlyHash,
 				signingOperation,fileToSign,
 				null,null,null,null,
 				null,null,null,
@@ -255,6 +260,7 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 			String proxyHost,String proxyPort
 			) throws IOException, URISyntaxException, GeneralSecurityException {
 		super();
+		/*
 		this.provider = new BouncyCastleProvider();
 		Security.addProvider(provider);
 		this.signatureLevel=signatureLevel;
@@ -284,7 +290,7 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 		}else{			
 			this.signaturePackaging = SignaturePackaging.ENVELOPING;
 		}	
-		//OPZIONALI gia gestite da DSS
+		//OPZIONALI already managed from DSS
 		if(signatureLevel.getSignatureForm().equals(SignatureForm.CAdES) && 
 				signaturePackaging.equals(SignaturePackaging.ENVELOPED)){
 			logger.error("not possible with CAdES. The original file is not extractable");
@@ -324,7 +330,126 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 		this.isOnlyHash = isOnlyHash;
 		
 		if(improntaNonFirmata == null){
-			improntaNonFirmata = DSS5Utils.digest(algorithm, fileToSign);
+			improntaNonFirmata = DSSUtils.digest(algorithm, fileToSign);
+		}
+		*/
+		initConstructor(signatureLevel, signatureTokenType, 
+				isDetached, isNested, isCounterSign, isOnlyMark, isAutomatic, isParallel, isOnlyHash, 
+				signingOperation, fileToSign, 
+				keyStoreFile, keyStoreType, keyStorePassword, keyStoreAlias, 
+				tspServer, tspUsername, tspPassword, 
+				proxyHost, proxyPort);
+	}
+	
+	public SignUtilsDSS(SignatureLevel signatureLevel,SignatureTokenType signatureTokenType,TypeExtensionSign typeExtensionSign,
+			SigningOperation signingOperation,byte[] fileToSign,
+			File keyStoreFile,String keyStoreType,String keyStorePassword,String keyStoreAlias,
+			String tspServer,String tspUsername, String tspPassword,
+			String proxyHost,String proxyPort) throws IOException, URISyntaxException, GeneralSecurityException {
+		
+		boolean isDetached = false;
+		boolean isNested = false;
+		boolean isCounterSign = false;
+		boolean isOnlyMark = false;
+		boolean isAutomatic = false;
+		boolean isParallel = false;
+		boolean isOnlyHash = false;		
+		switch(typeExtensionSign){
+			case IS_AUTOMATIC: isAutomatic=true;
+			case IS_COUNTERSIGNATURE: isCounterSign=true;
+			case IS_DETACHED: isDetached=true;
+			case IS_EXTENDED: isExtended=true;
+			case IS_NESTED: isNested=true;
+			case IS_ONLY_HASH: isOnlyHash=true;
+			case IS_ONLY_MARK: isOnlyMark=true;
+			case IS_PARALLEL: isParallel=true;
+		}	
+		initConstructor(signatureLevel, signatureTokenType.name(), 
+				isDetached, isNested, isCounterSign, isOnlyMark, isAutomatic, isParallel, isOnlyHash, 
+				signingOperation, fileToSign, 
+				keyStoreFile, keyStoreType, keyStorePassword, keyStoreAlias, 
+				tspServer, tspUsername, tspPassword, 
+				proxyHost, proxyPort);
+		
+	}
+	
+	private void initConstructor(SignatureLevel signatureLevel,String signatureTokenType,
+			boolean isDetached,boolean isNested,boolean isCounterSign, boolean isOnlyMark,boolean isAutomatic,boolean isParallel,boolean isOnlyHash,
+			SigningOperation signingOperation, byte[] fileToSign,
+			File keyStoreFile,String keyStoreType,String keyStorePassword,String keyStoreAlias,
+			String tspServer,String tspUsername, String tspPassword,
+			String proxyHost,String proxyPort
+			) throws IOException, URISyntaxException, GeneralSecurityException {
+		this.provider = new BouncyCastleProvider();
+		Security.addProvider(provider);
+		this.signatureLevel=signatureLevel;
+		//TODO In attesa dell'aggiornamento della libraria DSS		
+		//this.signatureTokenType= SignatureTokenType.valueOf(signatureTokenType);
+		
+		if(isDetached){			
+			this.signaturePackaging = SignaturePackaging.DETACHED;			
+		}else if(isNested){
+			//IGNORA
+			if(signatureLevel.getSignatureForm().equals(SignatureForm.CAdES)){
+				this.signaturePackaging = SignaturePackaging.ENVELOPING;		
+			}else if(signatureLevel.getSignatureForm().equals(SignatureForm.XAdES)){
+				this.signaturePackaging = SignaturePackaging.ENVELOPING;		
+			}else if(signatureLevel.getSignatureForm().equals(SignatureForm.PAdES)){
+				this.signaturePackaging = SignaturePackaging.ENVELOPED;		
+			}		
+			//this.signaturePackaging = SignaturePackaging.ENVELOPED;	
+		}else if(isParallel){
+			if(signatureLevel.getSignatureForm().equals(SignatureForm.CAdES)){
+				this.signaturePackaging = SignaturePackaging.ENVELOPING;		
+			}else if(signatureLevel.getSignatureForm().equals(SignatureForm.XAdES)){
+				this.signaturePackaging = SignaturePackaging.ENVELOPED;		
+			}else if(signatureLevel.getSignatureForm().equals(SignatureForm.PAdES)){
+				this.signaturePackaging = SignaturePackaging.ENVELOPED;		
+			}
+		}else{			
+			this.signaturePackaging = SignaturePackaging.ENVELOPING;
+		}	
+		//OPZIONALI already managed from DSS
+		if(signatureLevel.getSignatureForm().equals(SignatureForm.CAdES) && 
+				signaturePackaging.equals(SignaturePackaging.ENVELOPED)){
+			logger.error("not possible with CAdES. The original file is not extractable");
+		}
+		if(signatureLevel.getSignatureForm().equals(SignatureForm.XAdES) && 
+				signaturePackaging.equals(SignaturePackaging.ENVELOPING)){
+			logger.error("not possible with XAdES. The original file is embedded in the signature as ds:Object");
+		}		
+		
+		if(signatureLevel.equals(SignatureLevel.CAdES_BASELINE_T) ||
+				signatureLevel.equals(SignatureLevel.XAdES_BASELINE_T) ||
+				signatureLevel.equals(SignatureLevel.PAdES_BASELINE_T) 
+				){
+			this.isWithTimeStamp=true;
+		}else if(signatureLevel.equals(SignatureLevel.CAdES_BASELINE_LT) ||
+				signatureLevel.equals(SignatureLevel.XAdES_BASELINE_LT) ||
+				signatureLevel.equals(SignatureLevel.PAdES_BASELINE_LT) 
+				){
+			this.isWithLongTermDataCertificates=true;
+		}else if(signatureLevel.equals(SignatureLevel.CAdES_BASELINE_LTA) ||
+				signatureLevel.equals(SignatureLevel.XAdES_BASELINE_LTA) ||
+				signatureLevel.equals(SignatureLevel.PAdES_BASELINE_LTA) 
+				){
+			this.isWithLongTermDataCertificatesAndArchiveTimestamp=true;
+		}
+		setKeyStoreSource(keyStoreFile, keyStoreType, keyStorePassword,keyStoreAlias);
+
+		this.signingOperation = signingOperation;
+
+		this.isAutomatic =  isAutomatic;
+		this.isCounterSignature = isCounterSign;
+		this.isDetached = isDetached;
+		this.isNested = isNested;
+		this.isExtended = signingOperation.equals(SigningOperation.EXTEND) ? true : false;
+		this.isParallel = isParallel;
+		this.isOnlyMark = isOnlyMark;
+		this.isOnlyHash = isOnlyHash;
+		
+		if(improntaNonFirmata == null){
+			improntaNonFirmata = DSSUtils.digest(algorithm, fileToSign);
 		}
 	}
 
@@ -361,6 +486,7 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 				setAliasCertificateSource(ks,currentAliasCertificate);
 			}
 			this.keyStore=ks;
+			this.keyStoreCertificateSource = new KeyStoreCertificateSource(keyStoreFile,keyStoreType,keyStorePassword);
 		}
 	}
 	
@@ -417,15 +543,38 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 	  //return KeyPair(publicKey, (PrivateKey) key);
 	  return keyStore;
 	}
+	
+	 public void setTSPSource(String tspServer,String tspUsername,String tspPassword,
+	    		DigestAlgorithm digestAlgorithm,String tspPolicyOid,String httpMethod,NonceSource nonceSource) 
+	    				throws NoSuchAlgorithmException, CloneNotSupportedException, IOException{
+		 setTSPSource(tspServer,tspUsername,tspPassword,
+		    		digestAlgorithm,tspPolicyOid,httpMethod,nonceSource,
+		    		null,null,null,
+		    		null,null,null); 
+		    			
+	 }
+	 
+	 public void setTSPSource(String tspServer,String tspUsername,String tspPassword,
+	    		DigestAlgorithm digestAlgorithm,String tspPolicyOid,String httpMethod,NonceSource nonceSource,
+	    		String keyStorePath,String keyStoreType,String keyStorePassword) 
+	    				throws NoSuchAlgorithmException, CloneNotSupportedException, IOException{
+		 setTSPSource(tspServer,tspUsername,tspPassword,
+		    		digestAlgorithm,tspPolicyOid,httpMethod,nonceSource,
+		    		keyStorePath,keyStoreType,keyStorePassword,
+		    		keyStorePath,keyStoreType,keyStorePassword); 	    			
+	 }
 
-    public void setTSPSource(String tspServer,String tspUsername,String tspPassword,DigestAlgorithm digestAlgorithm,String tspPolicyOid,String httpMethod,NonceSource nonceSource) throws NoSuchAlgorithmException, CloneNotSupportedException, IOException{
+    public void setTSPSource(String tspServer,String tspUsername,String tspPassword,
+    		DigestAlgorithm digestAlgorithm,String tspPolicyOid,String httpMethod,NonceSource nonceSource,
+    		String keyStorePath,String keyStoreType,String keyStorePassword,
+    		String trustStorePath,String trustStoreType,String trustStorePassword) 
+    				throws NoSuchAlgorithmException, CloneNotSupportedException, IOException{
 		if(tspServer==null || !tspServer.isEmpty()){
 			this.tspServer=tspServer;
 			this.tspUsername = tspUsername;
 			this.tspPassword = tspPassword;
 			this.tspPolicyOid = tspPolicyOid;			
-			TimeStamper.Builder timeStamperBuilder = new TimeStamper.Builder()
-				
+			TimeStamper.Builder timeStamperBuilder = new TimeStamper.Builder()				
 					 //.setMessageDigest("SHA-1", TSPAlgorithms.SHA1)
 		             .setMessageDigest(digestAlgorithm)
 		             .setTsaUrl(this.tspServer);
@@ -439,7 +588,17 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 					 }					 
 					 if(proxyHost != null && !proxyHost.isEmpty() && proxyPort != null && !proxyPort.isEmpty()){					 
 						 timeStamperBuilder.setProxy(proxyHost,Integer.valueOf(proxyPort),proxyUsername,proxyPassword);
-					 }	          
+					 }	
+					 if(keyStorePath!=null && !keyStorePath.isEmpty() && 
+							 keyStoreType!=null && !keyStoreType.isEmpty() &&
+							 keyStorePassword != null && !keyStorePassword.isEmpty()){
+						 timeStamperBuilder.setKeyStore(keyStorePath, keyStoreType, keyStorePassword);
+					 }	
+					 if(trustStorePath!=null && !trustStorePath.isEmpty() && 
+							 trustStoreType!=null && !trustStoreType.isEmpty() &&
+							 trustStorePassword != null && !trustStorePassword.isEmpty()){
+						 timeStamperBuilder.setTrustStore(trustStorePath, trustStoreType, trustStorePassword);
+					 }	
 		             //.setData("Some!".getBytes())
 			 this.timeStamper=timeStamperBuilder.build();
 		}else{
@@ -603,7 +762,7 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 		this.usernameWs = usernameWs;
 		this.passwordWs = passwordWs;	
 	}
-
+	
 	//=========================================================================================================
 	// PREPARE FUNCTION DSS
 	//=====================================================================================
@@ -837,7 +996,7 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 			SignatureValue signatureValue =  null;
 			if(isOnlyHash){
 				//DigestDocument hashDocument = DSS5Utils.toDSSDocumentUsingDigest(dssddocument, algorithm);
-				InMemoryDocument hashDocument = new InMemoryDocument(DSS5Utils.digest(algorithm, dssddocument));
+				InMemoryDocument hashDocument = new InMemoryDocument(DSSUtils.digest(algorithm, dssddocument));
 				dataToSign = service.getDataToSign(hashDocument,parameters);					
 				signatureValue = signatureTokenConnection.sign(dataToSign,algorithm,currentDSSPrivateKeyEntry);
 			}else{
@@ -910,7 +1069,7 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 			SignatureValue signatureValue =  null;
 			if(isOnlyHash){
 				//DigestDocument hashDocument = DSS5Utils.toDSSDocumentUsingDigest(dssddocument, algorithm);
-				InMemoryDocument hashDocument = new InMemoryDocument(DSS5Utils.digest(algorithm, documentToSign));
+				InMemoryDocument hashDocument = new InMemoryDocument(DSSUtils.digest(algorithm, documentToSign));
 				dataToSign = service.getDataToSign(hashDocument,parameters);					
 				signatureValue = signatureTokenConnection.sign(dataToSign,algorithm,currentDSSPrivateKeyEntry);
 			}else{
@@ -994,7 +1153,7 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 			SignatureValue signatureValue =  null;
 			if(isOnlyHash){
 				//DigestDocument hashDocument = DSS5Utils.toDSSDocumentUsingDigest(dssddocument, algorithm);
-				InMemoryDocument hashDocument = new InMemoryDocument(DSS5Utils.digest(algorithm, dssddocument));
+				InMemoryDocument hashDocument = new InMemoryDocument(DSSUtils.digest(algorithm, dssddocument));
 				dataToSign = service.getDataToSign(hashDocument,parameters);					
 				signatureValue = signatureTokenConnection.sign(dataToSign,algorithm,currentDSSPrivateKeyEntry);
 			}else{
@@ -1027,14 +1186,41 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 		}
 	}
 	
-	
 	private DSSDocument mark(SignatureLevel signatureLevel, byte[] dataToMark) throws IOException, TSPException, OperatorCreationException, NoSuchAlgorithmException, CertificateException{
-		if(DSS5Utils.validateCertificateTSP((X509Certificate)currentCertificate)){
+		if(CertificateUtils.validateCertificateTSP((X509Certificate)currentCertificate)){
 			//TODO capire perchè il timestamping remoto fallisce sempre 
 			logger.debug("The certificate you use for the timestamping is valid");
 			
 			final byte[] digestValue = DSSUtils.digest(algorithm, dataToMark);
 			TimeStampResponse markedFile = DSS5Utils.prepareTimeStampResponse(this.timeStamper, digestValue);
+			TimeStampToken token = markedFile.getTimeStampToken();
+			if(token != null){
+				byte[] encoding = token.getEncoded();
+				logger.debug("timestamp: "+token.getTimeStampInfo().getGenTime());
+                logger.debug("serial n. "+token.getTimeStampInfo().getSerialNumber());
+                logger.debug("tsa: "+token.getTimeStampInfo().getTsa());
+                logger.debug("policy: "+token.getTimeStampInfo().getPolicy());	
+                return new InMemoryDocument(encoding);
+			}else{
+				throw new DSSException("The certificate you use for the timestamping is valid but the token is NULL");
+			}
+		}else{
+			//Il certificato in esame non e' valido lo rendiamo valido per programmazione delle
+			//bouncycastle
+			logger.debug("The certificate you use for the timestamping is not valid we forced to work");
+			byte[] encoding = markForced(signatureLevel,dataToMark);
+			logger.debug(Arrays.toString(encoding));
+			return new InMemoryDocument(encoding);
+		}
+	}
+	
+	private DSSDocument mark(SignatureLevel signatureLevel, byte[] dataToMark,TimeStampResponse markedFile) throws IOException, TSPException, OperatorCreationException, NoSuchAlgorithmException, CertificateException{
+		if(CertificateUtils.validateCertificateTSP((X509Certificate)currentCertificate)){
+			//TODO capire perchè il timestamping remoto fallisce sempre 
+			logger.debug("The certificate you use for the timestamping is valid");
+			
+			final byte[] digestValue = DSSUtils.digest(algorithm, dataToMark);
+			//TimeStampResponse markedFile = DSS5Utils.prepareTimeStampResponse(this.timeStamper, digestValue);
 			TimeStampToken token = markedFile.getTimeStampToken();
 			if(token != null){
 				byte[] encoding = token.getEncoded();
@@ -1185,7 +1371,6 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 	//=====================================
 	//GETTER AND SETTER DSS
 	//=====================================
-	
 	public byte[] getImprontaFirmata() {
 		return improntaFirmata;
 	}
@@ -1208,6 +1393,10 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 
 	public DSSPrivateKeyEntry getCurrentDSSPrivateKeyEntry() {
 		return currentDSSPrivateKeyEntry;
+	}
+
+	public List<DSSPrivateKeyEntry> getPrivateKeys() {
+		return privateKeys;
 	}
 
 	public SignatureScope getSignatureScope() {
@@ -1236,6 +1425,14 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 
 	public SigningOperation getSigningOperation() {
 		return signingOperation;
+	}
+
+	public TimeStampResponse getTspTimeStampResponse() {
+		return tspTimeStampResponse;
+	}
+
+	public KeyStoreCertificateSource getKeyStoreCertificateSource() {
+		return keyStoreCertificateSource;
 	}
 
 	public SignatureImageParameters getSignatureImageParameters() {
@@ -1306,12 +1503,28 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 		return tspPassword;
 	}
 
+	public String getTspPolicyOid() {
+		return tspPolicyOid;
+	}
+
+	public TimeStamper getTimeStamper() {
+		return timeStamper;
+	}
+
 	public String getProxyHost() {
 		return proxyHost;
 	}
 
 	public String getProxyPort() {
 		return proxyPort;
+	}
+
+	public String getProxyUsername() {
+		return proxyUsername;
+	}
+
+	public String getProxyPassword() {
+		return proxyPassword;
 	}
 
 	public String getUrlWs() {
@@ -1324,6 +1537,14 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 
 	public String getPasswordWs() {
 		return passwordWs;
+	}
+
+	public static String getBc() {
+		return BC;
+	}
+
+	public boolean isAutomatic() {
+		return isAutomatic;
 	}
 
 	public boolean isCounterSignature() {
@@ -1344,6 +1565,14 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 
 	public boolean isParallel() {
 		return isParallel;
+	}
+
+	public boolean isOnlyMark() {
+		return isOnlyMark;
+	}
+
+	public boolean isOnlyHash() {
+		return isOnlyHash;
 	}
 
 	public boolean isWithTimeStamp() {
@@ -1377,7 +1606,7 @@ public class SignUtilsDSS{//<SP extends AbstractSignatureParameters> extends Abs
 	public Date getSigDate() {
 		return sigDate;
 	}
-	
+
 	//============================================================================================
 	
 	

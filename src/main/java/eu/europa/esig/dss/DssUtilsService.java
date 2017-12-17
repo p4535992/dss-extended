@@ -80,10 +80,12 @@ import eu.europa.esig.dss.XAdESNamespaces;
 public class DssUtilsService{
 	private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DssUtilsService.class);
 	
-	static final String OID_2_5_4_5 = "OID.2.5.4.5";
-	static final String ID = "Id";
-	static final String ID_MAYUS = "ID";
-	static final String ID_MINUS = "id";
+//	static final String OID_2_5_4_5 = "OID.2.5.4.5";
+	private static final String ID = "Id";
+	private static final String ID_MAYUS = "ID";
+	private static final String ID_MINUS = "id";
+	
+	private final static String[] IDs = {ID, ID_MINUS, ID_MAYUS}; 
 	
 	public static final String ID_ATTRIBUTE_NAME = "id";
 	public static final String XAD_ESV141_XSD = "/XAdESv141.xsd";
@@ -120,8 +122,6 @@ public class DssUtilsService{
 	private static final Set<String> transforms;
 	private static final Set<String> canonicalizers;
 	
-   private final static String[] IDs = {ID, ID_MINUS, ID_MAYUS}; 
-	
 	private static Random rnd = new Random(new Date().getTime());
 	private final static int RND_MAX_SIZE = 1048576;
 	
@@ -132,31 +132,31 @@ public class DssUtilsService{
     
     private static ArrayList<String> NODOS_DE_X = null;
     
-    /*  59 */   //private static final II18nManager I18N = I18nFactory.getI18nManager("MITyCLibXAdES");
-    /*     */   private static final String POLICY_DNIE_AUTHENTICATE = "2.16.724.1.2.2.2.4";
-    /*     */   private static final String POLICY_DNIE_SIGN = "2.16.724.1.2.2.2.3";
-    /*  67 */   private static final X509CertSelector CS_DNIE_AUTHENTICATE = new X509CertSelector();
-    /*     */ 
-    /*  69 */   private static final X509CertSelector CS_DNIE_SIGN = new X509CertSelector();
-    /*     */   public static final String DIGEST_ALG_SHA1 = "http://www.w3.org/2000/09/xmldsig#sha1";
-    /*     */   public static final String DIGEST_ALG_SHA256 = "http://www.w3.org/2001/04/xmldsig-more#sha256";
-    /*     */   public static final String DIGEST_ALG_SHA256_enc = "http://www.w3.org/2001/04/xmlenc#sha256";
-    /*     */   public static final String DIGEST_ALG_SHA256_hmac = "http://www.w3.org/2001/04/xmldsig-more#hmac-sha256";
-    /*     */   public static final String DIGEST_ALG_SHA512 = "http://www.w3.org/2001/04/xmldsig-more#sha512";
-    /*     */   public static final String DIGEST_ALG_SHA512_enc = "http://www.w3.org/2001/04/xmlenc#sha512";
-    /*     */   public static final String DIGEST_ALG_SHA512_hmac = "http://www.w3.org/2001/04/xmldsig-more#hmac-sha512";
-    /*     */   public static final String DIGEST_ALG_SHA224 = "http://www.w3.org/2001/04/xmldsig-more#sha224";
-    /*     */   public static final String DIGEST_ALG_SHA384 = "http://www.w3.org/2001/04/xmldsig-more#sha384";
-    /*     */   public static final String DIGEST_ALG_MD2 = "http://www.w3.org/2001/04/xmldsig-more#md2";
-    /*     */   public static final String DIGEST_ALG_MD4 = "http://www.w3.org/2001/04/xmldsig-more#md4";
-    /*     */   public static final String DIGEST_ALG_MD5 = "http://www.w3.org/2001/04/xmldsig-more#md5";
-    /*     */   public static final String DIGEST_ALG_RIPEMD128 = "http://www.w3.org/2001/04/xmldsig-more#ripemd128";
-    /*     */   public static final String DIGEST_ALG_RIPEMD160 = "http://www.w3.org/2001/04/xmldsig-more#ripemd160";
-    /*     */   public static final String DIGEST_ALG_RIPEMD256 = "http://www.w3.org/2001/04/xmldsig-more#ripemd256";
-    /*     */   public static final String DIGEST_ALG_RIPEMD320 = "http://www.w3.org/2001/04/xmldsig-more#ripemd320";
-    /*     */   public static final String DIGEST_ALG_TIGER = "http://www.w3.org/2001/04/xmldsig-more#tiger";
-    /*     */   public static final String DIGEST_ALG_WHIRLPOOL = "http://www.w3.org/2001/04/xmldsig-more#whirlpool";
-    /*     */   public static final String DIGEST_ALG_GOST3411 = "http://www.w3.org/2001/04/xmldsig-more#gost3411";
+
+//    private static final String POLICY_DNIE_AUTHENTICATE = "2.16.724.1.2.2.2.4";
+//    private static final String POLICY_DNIE_SIGN = "2.16.724.1.2.2.2.3";
+    private static final X509CertSelector CS_DNIE_AUTHENTICATE = new X509CertSelector();
+     
+    private static final X509CertSelector CS_DNIE_SIGN = new X509CertSelector();
+    public static final String DIGEST_ALG_SHA1 = "http://www.w3.org/2000/09/xmldsig#sha1";
+    public static final String DIGEST_ALG_SHA256 = "http://www.w3.org/2001/04/xmldsig-more#sha256";
+    public static final String DIGEST_ALG_SHA256_enc = "http://www.w3.org/2001/04/xmlenc#sha256";
+    public static final String DIGEST_ALG_SHA256_hmac = "http://www.w3.org/2001/04/xmldsig-more#hmac-sha256";
+    public static final String DIGEST_ALG_SHA512 = "http://www.w3.org/2001/04/xmldsig-more#sha512";
+    public static final String DIGEST_ALG_SHA512_enc = "http://www.w3.org/2001/04/xmlenc#sha512";
+    public static final String DIGEST_ALG_SHA512_hmac = "http://www.w3.org/2001/04/xmldsig-more#hmac-sha512";
+    public static final String DIGEST_ALG_SHA224 = "http://www.w3.org/2001/04/xmldsig-more#sha224";
+    public static final String DIGEST_ALG_SHA384 = "http://www.w3.org/2001/04/xmldsig-more#sha384";
+    public static final String DIGEST_ALG_MD2 = "http://www.w3.org/2001/04/xmldsig-more#md2";
+    public static final String DIGEST_ALG_MD4 = "http://www.w3.org/2001/04/xmldsig-more#md4";
+    public static final String DIGEST_ALG_MD5 = "http://www.w3.org/2001/04/xmldsig-more#md5";
+    public static final String DIGEST_ALG_RIPEMD128 = "http://www.w3.org/2001/04/xmldsig-more#ripemd128";
+    public static final String DIGEST_ALG_RIPEMD160 = "http://www.w3.org/2001/04/xmldsig-more#ripemd160";
+    public static final String DIGEST_ALG_RIPEMD256 = "http://www.w3.org/2001/04/xmldsig-more#ripemd256";
+    public static final String DIGEST_ALG_RIPEMD320 = "http://www.w3.org/2001/04/xmldsig-more#ripemd320";
+    public static final String DIGEST_ALG_TIGER = "http://www.w3.org/2001/04/xmldsig-more#tiger";
+    public static final String DIGEST_ALG_WHIRLPOOL = "http://www.w3.org/2001/04/xmldsig-more#whirlpool";
+    public static final String DIGEST_ALG_GOST3411 = "http://www.w3.org/2001/04/xmldsig-more#gost3411";
 
 	static {
 
@@ -225,22 +225,22 @@ public class DssUtilsService{
 	        mapReverseURIXMLSignatures.put("http://www.w3.org/2001/04/xmldsig-more#sha384", "SHA-384");
 	        mapReverseURIXMLSignatures.put("http://www.w3.org/2001/04/xmldsig-more#sha512", "SHA-512");
 	
-    		/*     */     try
-    		/*     */     {
-    		/*  72 */       CS_DNIE_AUTHENTICATE.setPolicy(new HashSet(Arrays.asList(new String[] { "2.16.724.1.2.2.2.4" })));
-    		/*  73 */       CS_DNIE_SIGN.setPolicy(new HashSet(Arrays.asList(new String[] { "2.16.724.1.2.2.2.3" })));
-    		/*     */     } catch (IOException ex) {
-    		/*  75 */       logger.warn("i18n.mityc.xades.utils.2");
-    		/*  76 */       if (logger.isDebugEnabled())
-    		/*  77 */         logger.debug(ex.getMessage(), ex);
-    		/*     */     }
-    		/*  48 */     NODOS_DE_X = new ArrayList(6);
-    		/*  49 */     NODOS_DE_X.add("SignatureValue");
-    		/*  50 */     NODOS_DE_X.add("SignatureTimeStamp");
-    		/*  51 */     NODOS_DE_X.add("CompleteCertificateRefs");
-    		/*  52 */     NODOS_DE_X.add("CompleteRevocationRefs");
-    		/*  53 */     NODOS_DE_X.add("AttributeCertificateRefs");
-    		/*  54 */     NODOS_DE_X.add("AttributeRevocationRefs");
+    		try
+    		     {
+    		       CS_DNIE_AUTHENTICATE.setPolicy(new HashSet(Arrays.asList(new String[] { "2.16.724.1.2.2.2.4" })));
+    		       CS_DNIE_SIGN.setPolicy(new HashSet(Arrays.asList(new String[] { "2.16.724.1.2.2.2.3" })));
+    		     } catch (IOException ex) {
+    		       logger.warn("i18n.mityc.xades.utils.2");
+    		       if (logger.isDebugEnabled())
+    		         logger.debug(ex.getMessage(), ex);
+    		}
+    		NODOS_DE_X = new ArrayList(6);
+    		NODOS_DE_X.add("SignatureValue");
+    		NODOS_DE_X.add("SignatureTimeStamp");
+    		NODOS_DE_X.add("CompleteCertificateRefs");
+    		NODOS_DE_X.add("CompleteRevocationRefs");
+    		NODOS_DE_X.add("AttributeCertificateRefs");
+    		NODOS_DE_X.add("AttributeRevocationRefs");
 	}
 
 	private static Schema schema = null;
